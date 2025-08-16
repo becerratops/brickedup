@@ -5,14 +5,23 @@ A minimal internal web app for startup teams to log daily standup updates and tr
 ## Features
 
 🔐 **Team-Based User Management**: Organize users by teams (Development, Marketing) with dropdown selection or free text input
+
 📋 **Smart Task Management**: Individual task entries with bullet-point auto-parsing and completion tracking
+
 🎯 **Editable Sprint Goals**: All users can edit sprint goals in real-time for collaborative planning
+
 👤 **Personal Task View**: Dedicated "My Tasks" view for individual task management and end-of-day workflows
+
 👥 **Team Standup View**: Real-time view of what everyone is working on with user tagging and collaboration
+
 🚀 **End-of-Day Workflow**: Guided process to update progress and plan tomorrow before leaving work
+
 📅 **Enhanced Dashboard**: View tasks by completion status, team, and sprint alignment with delay tracking
+
 📤 **Professional Slack Export**: Clean formatted output with date subtitles and organized task lists
+
 🔄 **Incomplete Task Management**: Smart handling of incomplete tasks with move/complete options and reasoning
+
 ⏰ **Stress-Free Planning**: Plan tomorrow's work today for peace of mind and focused mornings
 
 ## Getting Started
