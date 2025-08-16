@@ -1,0 +1,8 @@
+[build]
+  command = "npm run ci"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+
