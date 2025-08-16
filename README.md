@@ -1,4 +1,4 @@
-# Remembrall
+# BrickedUp
 
 A minimal internal web app for startup teams to log daily standup updates and track accountability.
 
