@@ -143,9 +143,20 @@ export class AuthService {
 
     const users = this.getStoredUsers();
 
-    // Check if username already exists
+    // Check if username already exists locally
     if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
       throw new Error('Username already exists');
+    }
+
+    // Check if username already exists remotely
+    try {
+      const remoteUser = await getAuthUserByUsername(username.toLowerCase());
+      if (remoteUser) {
+        throw new Error('Username already exists');
+      }
+    } catch (error) {
+      // If remote check fails, continue with local check only
+      console.warn('Remote username check failed, continuing with local check only:', error);
     }
 
     // Check if email already exists (if provided)
@@ -193,6 +204,39 @@ export class AuthService {
 
   static logout(): void {
     this.setCurrentUser(null);
+  }
+
+  // Clear orphaned local users that no longer exist remotely
+  static async clearOrphanedUsers(): Promise<void> {
+    try {
+      const localUsers = this.getStoredUsers();
+      const remoteUsernames = new Set<string>();
+      
+      // Get all remote usernames
+      for (const user of localUsers) {
+        try {
+          const remoteUser = await getAuthUserByUsername(user.username.toLowerCase());
+          if (remoteUser) {
+            remoteUsernames.add(user.username.toLowerCase());
+          }
+        } catch (error) {
+          // If remote check fails, assume user exists
+          remoteUsernames.add(user.username.toLowerCase());
+        }
+      }
+      
+      // Remove local users that don't exist remotely
+      const validUsers = localUsers.filter(user => 
+        remoteUsernames.has(user.username.toLowerCase())
+      );
+      
+      if (validUsers.length !== localUsers.length) {
+        console.log(`🧹 Cleared ${localUsers.length - validUsers.length} orphaned local users`);
+        this.saveUsers(validUsers);
+      }
+    } catch (error) {
+      console.warn('Failed to clear orphaned users:', error);
+    }
   }
 
   static async changePassword(currentPassword: string, newPassword: string): Promise<void> {

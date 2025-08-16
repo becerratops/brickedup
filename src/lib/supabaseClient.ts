@@ -4,7 +4,13 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 export function isSupabaseConfigured(): boolean {
-  return Boolean(supabaseUrl && supabaseAnonKey);
+  const configured = Boolean(supabaseUrl && supabaseAnonKey);
+  console.log('🔧 Supabase configuration check:', {
+    hasUrl: !!supabaseUrl,
+    hasKey: !!supabaseAnonKey,
+    configured
+  });
+  return configured;
 }
 
 export const supabase = isSupabaseConfigured()
@@ -12,5 +18,11 @@ export const supabase = isSupabaseConfigured()
       auth: { persistSession: false },
     })
   : (undefined as unknown as ReturnType<typeof createClient>);
+
+if (isSupabaseConfigured()) {
+  console.log('✅ Supabase client created successfully');
+} else {
+  console.warn('⚠️ Supabase not configured - running in local-only mode');
+}
 
 

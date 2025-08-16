@@ -14,6 +14,9 @@ import { AppProvider } from '@/components/AppProvider';
 import AppRouter from './AppRouter';
 import { useEffect } from 'react';
 import { syncAllToLocal, startRealtimeSync, stopRealtimeSync } from '@/lib/remoteSync';
+import { checkTablesExist, ensureTablesExist } from '@/lib/supabaseSetup';
+import { DebugInfo } from '@/components/DebugInfo';
+import { SupabaseTest } from '@/components/SupabaseTest';
 
 const head = createHead({
   plugins: [
@@ -35,9 +38,48 @@ function AppContent() {
   const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    // On app mount, try to sync remote → local so team sees latest
-    syncAllToLocal();
-    startRealtimeSync();
+    // On app mount, check if tables exist and then sync data
+    const initializeSupabase = async () => {
+      try {
+        // First check if tables exist
+        const tablesExist = await checkTablesExist();
+        
+        if (!tablesExist) {
+          console.log('📋 Tables do not exist, attempting to create them...');
+          
+          // Try to create tables (this will likely fail but provide instructions)
+          const tablesCreated = await ensureTablesExist();
+          
+          if (!tablesCreated) {
+            console.error('❌ Cannot create tables automatically. Please create them manually in Supabase dashboard.');
+            console.error('📋 Go to your Supabase project → SQL Editor and run the SQL from the console logs.');
+            
+            // Show a user-friendly message
+            alert('Supabase tables need to be created manually. Check the browser console for SQL instructions.');
+            
+            // Still try to sync in case tables get created manually
+            await syncAllToLocal();
+            startRealtimeSync();
+            return;
+          }
+        }
+        
+        console.log('✅ Supabase tables ready, starting sync...');
+        // Now sync data from remote
+        await syncAllToLocal();
+        // Start realtime sync
+        startRealtimeSync();
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize Supabase:', error);
+        // Fallback to local-only mode
+        await syncAllToLocal();
+        startRealtimeSync();
+      }
+    };
+
+    initializeSupabase();
+    
     return () => stopRealtimeSync();
   }, []);
 
@@ -56,7 +98,13 @@ function AppContent() {
     return <AuthPage />;
   }
 
-  return <AppRouter />;
+  return (
+    <>
+      <AppRouter />
+      <DebugInfo />
+      <SupabaseTest />
+    </>
+  );
 }
 
 export function App() {
